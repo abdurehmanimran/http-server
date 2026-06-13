@@ -1,11 +1,20 @@
 #include "parser.h"
+#include <stdio.h>
 #include <string.h>
 
 int parseHeader(char *buffer, RequestHeader *header) {
   char *line_p;
   char *firstLine = strtok_r(buffer, "\n", &line_p);
 
-  if (!firstLine) {
+  while (!strstr(firstLine, "GET")) {
+    firstLine = strtok_r(NULL, "\n", &line_p);
+
+    if (firstLine == NULL)
+      return -1;
+  }
+
+  if (firstLine != NULL) {
+    puts(firstLine);
     char *part_p;
     char *part = strtok_r(firstLine, " ", &part_p);
 
@@ -15,6 +24,7 @@ int parseHeader(char *buffer, RequestHeader *header) {
       header->type = POST;
 
     part = strtok_r(NULL, " ", &part_p);
+    puts(part);
 
     header->path = strdup(part);
 
