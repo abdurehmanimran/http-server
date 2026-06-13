@@ -1,6 +1,9 @@
+#include "io.h"
 #include "network.h"
 #include "parser.h"
+#include "str.h"
 #include <stdio.h>
+#include <sys/socket.h>
 
 int main() {
   struct addrinfo *results;
@@ -44,6 +47,31 @@ int main() {
   printf("\n");
 
   printf("Path -> %s\n", header.path);
+
+  String *filePath = createString("web/");
+  stringAppend(&filePath, header.path);
+
+  String *fileText = readFile(filePath->str);
+
+  String *content = createString("HTTP/1.1 200 OK\n"
+                                 "Date: Sat, 13 Jun 2026 12:00:00 GMT\n"
+                                 "Server: Abdur Rehman/2.4\n"
+                                 // "Content-Type: application/json\n"
+  );
+
+  char contentLen[256];
+  snprintf(contentLen, sizeof(contentLen), "Content-Length: %d\n\n",
+           fileText->size);
+
+  stringAppend(&content, contentLen);
+  stringCat(&content, fileText);
+
+  printf("Sending !!!\n");
+  printf("________________________________________\n");
+  printf("%s", content->str);
+  printf("________________________________________\n");
+
+  send(connectionSocket, content->str, content->size, 0);
 
   return 0;
 }
