@@ -11,22 +11,26 @@ String *readFile(char *path) {
 
   FILE *file = fopen(path, "r");
   if (file == NULL) {
-    printf("Error: File couldn't be accessed !!");
-    exit(1);
+    printf("Error: %s couldn't be accessed !!", path);
+    // exit(1);
+    dBuffer = createString("");
+    return dBuffer;
   }
 
-  char tempBuffer[512];
-  fread(tempBuffer, sizeof(char), 512, file);
+  char tempBuffer[513];
+  int bytes = fread(tempBuffer, sizeof(char), 512, file);
 
-  dBuffer = createString(tempBuffer);
+  dBuffer = createStringData(tempBuffer, bytes);
 
   while (1) {
     memset(tempBuffer, 0, sizeof(tempBuffer));
-    size_t bytesRead = fread(tempBuffer, sizeof(char), 512, file);
-    stringAppend(&dBuffer, tempBuffer);
+    size_t bytesRead = fread(tempBuffer, sizeof(char), 513, file);
+    stringAppendData(&dBuffer, tempBuffer, bytesRead);
 
-    if (bytesRead < 512)
-      break;
+    if (bytesRead < 51) {
+      if (feof(file))
+        break;
+    }
   }
 
   return dBuffer;
