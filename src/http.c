@@ -1,9 +1,60 @@
+#include "header.h"
 #include "io.h"
 #include "network.h"
 #include "parser.h"
 #include "str.h"
+#include <bits/pthreadtypes.h>
+#include <pthread.h>
 #include <stdio.h>
+#include <string.h>
 #include <sys/socket.h>
+#include <unistd.h>
+
+String *fileType(String *path) {
+  String *fileType;
+
+  if (strstr(path->str, "html"))
+    fileType = createString("text/html");
+  else if (strstr(path->str, "png"))
+    fileType = createString("image/png");
+  else if (strstr(path->str, "js"))
+    fileType = createString("text/javascript");
+  else
+    fileType = createString("text/html");
+
+  return fileType;
+}
+
+void *sendResponse(void *connectionSocket) {
+  char buffer[2056];
+  printf("Getting Request Data!!\n");
+  getRequestData(*((int *)connectionSocket), buffer, sizeof(buffer));
+
+  RequestHeader header;
+  parseHeader(buffer, &header);
+
+  String *filePath = createString("web/");
+  stringAppend(&filePath, header.path);
+
+  String *fileText = readFile(filePath->str);
+  String *type = fileType(filePath);
+  String *resHeader =
+      createResponseHeader(200, "OK", fileText->size, type->str);
+
+  stringCat(&resHeader, fileText);
+
+  int bytes =
+      send(*((int *)connectionSocket), resHeader->str, resHeader->size, 0);
+
+  printf("Sent: %d bytes!!\n", bytes);
+
+  return NULL;
+}
+
+void responceFork(int *fd) {
+  pthread_t thread;
+  pthread_create(&thread, NULL, sendResponse, fd);
+}
 
 int main() {
   struct addrinfo *results;
@@ -19,59 +70,22 @@ int main() {
   bindSock(sock, results);
 
   printf("Listening!!\n");
-  listen(sock, 20);
+  listen(sock, 100);
 
-  struct sockaddr_storage incomingAddr;
-  printf("Accepting !!\n");
-  int connectionSocket = acceptConnection(sock, &incomingAddr);
-  printf("Accepted !!\n");
+  while (1) {
+    struct sockaddr_storage incomingAddr;
+    printf("Accepting !!\n");
+    int connectionSocket = acceptConnection(sock, &incomingAddr);
+    printf("Accepted !!\n");
 
-  char buffer[2056];
-  getRequestData(connectionSocket, buffer, sizeof(buffer));
-
-  RequestHeader header;
-  parseHeader(buffer, &header);
-
-  printf("Type -> ");
-  switch (header.type) {
-  case GET:
-    printf("GET");
-    break;
-  case POST:
-    printf("POST");
-    break;
-  default:
-    printf("NA");
-    break;
+    if (connectionSocket != -1)
+      sendResponse(&connectionSocket);
+    else {
+      printf("Error: Something happened!!\n");
+    }
+    close(connectionSocket);
+    // responceFork(&connectionSocket);
   }
-  printf("\n");
-
-  printf("Path -> %s\n", header.path);
-
-  String *filePath = createString("web/");
-  stringAppend(&filePath, header.path);
-
-  String *fileText = readFile(filePath->str);
-
-  String *content = createString("HTTP/1.1 200 OK\n"
-                                 "Date: Sat, 13 Jun 2026 12:00:00 GMT\n"
-                                 "Server: Abdur Rehman/2.4\n"
-                                 // "Content-Type: application/json\n"
-  );
-
-  char contentLen[256];
-  snprintf(contentLen, sizeof(contentLen), "Content-Length: %d\n\n",
-           fileText->size);
-
-  stringAppend(&content, contentLen);
-  stringCat(&content, fileText);
-
-  printf("Sending !!!\n");
-  printf("________________________________________\n");
-  printf("%s", content->str);
-  printf("________________________________________\n");
-
-  send(connectionSocket, content->str, content->size, 0);
 
   return 0;
 }
