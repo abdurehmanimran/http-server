@@ -31,6 +31,21 @@ String *createString(char *str) {
   return stringStruct;
 }
 
+String *createStringData(char *str, unsigned int bytes) {
+  String *stringStruct;
+  allocString(&stringStruct, bytes + 1);
+
+  stringStruct->size = bytes;
+  stringStruct->capacity = bytes + 1;
+  // strcpy(stringStruct->str, str);
+
+  for (int i = 0; i < bytes; i++) {
+    stringStruct->str[i] = str[i];
+  }
+
+  return stringStruct;
+}
+
 void expandStringCap(String **str) {
   (*str)->capacity += EXPAND_CAP;
   char *tempStr = (char *)realloc((*str)->str, sizeof(char) * (*str)->capacity);
@@ -51,10 +66,37 @@ void stringAppend(String **dest, char *srcStr) {
   strcat((*dest)->str, srcStr);
 }
 
+void stringAppendData(String **dest, char *srcStr, int bytes) {
+  while ((*dest)->size + bytes >= (*dest)->capacity)
+    expandStringCap(dest);
+
+  int index = (*dest)->size;
+  (*dest)->size += bytes;
+
+  for (int i = 0; i < bytes; i++) {
+    (*dest)->str[index] = srcStr[i];
+    index++;
+  }
+}
+
 void stringCat(String **dest, String *src) {
   while ((*dest)->size + src->size >= (*dest)->capacity)
     expandStringCap(dest);
 
+  int index = (*dest)->size;
   (*dest)->size += src->size;
-  strcat((*dest)->str, src->str);
+  // strcat((*dest)->str, src->str);
+
+  for (int i = 0; i < src->size; i++) {
+    (*dest)->str[index++] = src->str[i];
+  }
+  (*dest)->str[index] = 0;
+}
+
+void freeString(String *ptr) {
+  if (ptr) {
+    if (ptr->str)
+      free(ptr->str);
+    free(ptr);
+  }
 }
