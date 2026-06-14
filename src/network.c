@@ -43,8 +43,8 @@ void createConnection(int sock, struct addrinfo *addrStruct) {
 }
 
 int acceptConnection(int sock, struct sockaddr_storage *incomingAddr) {
-  unsigned int size = sizeof(*incomingAddr);
-  int new_fd = accept(sock, (struct sockaddr *)&incomingAddr, &size);
+  socklen_t size = sizeof(*incomingAddr);
+  int new_fd = accept(sock, (struct sockaddr *)incomingAddr, &size);
 
   if (new_fd != -1)
     return new_fd;
@@ -58,8 +58,11 @@ void getRequestData(int fd, char *buffer, size_t size) {
   memset(buffer, 0, size);
 
   if (recv(fd, buffer, size, 0) != -1) {
+    printf("_______________________________\n");
     printf("%s", buffer);
+    printf("_______________________________\n");
   } else {
+    printf("Error: Failed to recieve the request data !!\n");
   }
 }
 
