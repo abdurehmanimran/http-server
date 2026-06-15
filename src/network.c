@@ -58,9 +58,9 @@ void getRequestData(int fd, char *buffer, size_t size) {
   memset(buffer, 0, size);
 
   if (recv(fd, buffer, size, 0) != -1) {
-    printf("_______________________________\n");
-    printf("%s", buffer);
-    printf("_______________________________\n");
+    // printf("_______________________________\n");
+    // printf("%s", buffer);
+    // printf("_______________________________\n");
   } else {
     printf("Error: Failed to recieve the request data !!\n");
   }

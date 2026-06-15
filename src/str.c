@@ -58,6 +58,42 @@ void expandStringCap(String **str) {
   }
 }
 
+void replaceInString(String **str, char *find, char *replace) {
+  unsigned int findlen = strlen(find);
+  unsigned int replacelen = strlen(replace);
+  int offset = replacelen - findlen;
+
+  for (int i = 0; i < (*str)->size; i++) {
+    char found = 1;
+
+    if (strstr((*str)->str, find) != (*str)->str + i)
+      found = 0;
+
+    if (found) {
+      while (offset > (signed int)(*str)->capacity)
+        expandStringCap(str);
+
+      // Slide to the right starting from the end
+      if (offset > 0) {
+        for (int k = (*str)->size - 1; k >= findlen + i; k--)
+          (*str)->str[k + offset] = (*str)->str[k];
+      } else { // Slide to the left starting from the left side
+        for (int k = findlen + i; k < (*str)->size; k++)
+          (*str)->str[k + offset] = (*str)->str[k];
+      }
+
+      // Calculate the new size and place the null character accordingly
+      (*str)->size += offset;
+      (*str)->str[(*str)->size] = '\0';
+
+      // Replace
+      for (int k = 0; k < replacelen; k++) {
+        (*str)->str[k + i] = replace[k];
+      }
+    }
+  }
+}
+
 void stringAppend(String **dest, char *srcStr) {
   while ((*dest)->size + strlen(srcStr) >= (*dest)->capacity)
     expandStringCap(dest);
@@ -100,3 +136,15 @@ void freeString(String *ptr) {
     free(ptr);
   }
 }
+
+#ifdef STR_D
+int main() {
+  String *mainStr = createString("Hello%20World%20!!\n");
+
+  replaceInString(&mainStr, "%20", " ");
+
+  printf("%s", mainStr->str);
+
+  return 0;
+}
+#endif

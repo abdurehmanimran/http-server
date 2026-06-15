@@ -1,4 +1,6 @@
 #include "parser.h"
+#include "colors.h"
+#include <stdio.h>
 #include <string.h>
 
 int parseHeader(char *buffer, RequestHeader *header) {
@@ -13,6 +15,10 @@ int parseHeader(char *buffer, RequestHeader *header) {
   }
 
   if (firstLine != NULL) {
+    puts(GREEN "______________________________________________" WHITE);
+    puts(firstLine);
+    puts(GREEN "______________________________________________" WHITE);
+
     char *part_p;
     char *part = strtok_r(firstLine, " ", &part_p);
 

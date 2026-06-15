@@ -10,12 +10,16 @@ typedef struct {
 #define EXPAND_CAP 512
 
 void allocString(String **str, unsigned int cap);
-String *createString(char *str);
 void expandStringCap(String **str);
-void stringAppend(String **dest, char *srcStr);
-void stringCat(String **dest, String *src);
-void stringAppendData(String **dest, char *srcStr, int bytes);
-String *createStringData(char *str, unsigned int bytes);
 void freeString(String *ptr);
+
+String *createString(char *str);
+String *createStringData(char *str, unsigned int bytes);
+
+void stringAppend(String **dest, char *srcStr);
+void stringAppendData(String **dest, char *srcStr, int bytes);
+
+void stringCat(String **dest, String *src);
+void replaceInString(String **str, char *find, char *replace);
 
 #endif // !STR_H
