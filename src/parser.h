@@ -3,6 +3,7 @@
 
 #define GET 2555
 #define POST 2556
+#include "str.h"
 
 typedef struct {
   int type;
@@ -11,5 +12,6 @@ typedef struct {
 } RequestHeader;
 
 int parseHeader(char *buffer, RequestHeader *header);
+void removeURLParms(String *str);
 
 #endif // !PARSER_H

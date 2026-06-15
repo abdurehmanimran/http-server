@@ -48,6 +48,7 @@ void *sendResponse(void *connectionSocket) {
   String *filePath = createString("web/");
   String *halfPath = createString(header.path);
 
+  removeURLParms(halfPath);
   replaceInString(&halfPath, "%20", " ");
   stringCat(&filePath, halfPath);
   freeString(halfPath);

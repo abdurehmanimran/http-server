@@ -1,5 +1,6 @@
 #include "parser.h"
 #include "colors.h"
+#include "str.h"
 #include <stdio.h>
 #include <string.h>
 
@@ -34,4 +35,13 @@ int parseHeader(char *buffer, RequestHeader *header) {
     return 1;
   } else
     return -1;
+}
+
+void removeURLParms(String *str) {
+  for (int i = 0; i < str->size; i++) {
+    if (strstr(str->str, "html?") == str->str + i) {
+      str->str[i + 4] = '\0';
+      str->size = i + 4;
+    }
+  }
 }
