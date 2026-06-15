@@ -16,5 +16,6 @@ void stringAppend(String **dest, char *srcStr);
 void stringCat(String **dest, String *src);
 void stringAppendData(String **dest, char *srcStr, int bytes);
 String *createStringData(char *str, unsigned int bytes);
+void freeString(String *ptr);
 
 #endif // !STR_H

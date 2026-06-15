@@ -4,8 +4,10 @@
 #include "parser.h"
 #include "str.h"
 #include <bits/pthreadtypes.h>
+#include <netdb.h>
 #include <pthread.h>
 #include <stdio.h>
+#include <stdlib.h>
 #include <string.h>
 #include <sys/socket.h>
 #include <unistd.h>
@@ -48,6 +50,16 @@ void *sendResponse(void *connectionSocket) {
 
   printf("Sent: %d bytes!!\n", bytes);
 
+  // Freeing up memory
+  freeString(filePath);
+  freeString(fileText);
+  freeString(resHeader);
+  freeString(type);
+  free(header.path);
+
+  // Also, close the socket
+  close(*((int *)connectionSocket));
+
   return NULL;
 }
 
@@ -59,33 +71,36 @@ void responceFork(int *fd) {
 int main() {
   struct addrinfo *results;
 
-  printf("Creating address structures!!\n");
+  printf(":: Creating address structures!!\n");
   initAddrInfo(&results);
 
   int sock = createINETSock();
-  printf("Created socket -> %d\n", sock);
+  printf(":: Created socket -> %d\n", sock);
 
   resetPort(sock);
-  printf("Binding !!\n");
+  printf(":: Binding !!\n");
   bindSock(sock, results);
 
-  printf("Listening!!\n");
+  printf(":: Listening!!\n");
   listen(sock, 100);
 
   while (1) {
     struct sockaddr_storage incomingAddr;
-    printf("Accepting !!\n");
+    printf(":: Accepting Connection ...... !!\n");
     int connectionSocket = acceptConnection(sock, &incomingAddr);
-    printf("Accepted !!\n");
+    printf(":: Connection Accepted .... .. !!\n");
 
     if (connectionSocket != -1)
+      // responceFork(&connectionSocket);
       sendResponse(&connectionSocket);
     else {
       printf("Error: Something happened!!\n");
     }
-    close(connectionSocket);
-    // responceFork(&connectionSocket);
+    // close(connectionSocket);
   }
+
+  close(sock);
+  freeaddrinfo(results);
 
   return 0;
 }

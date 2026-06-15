@@ -95,7 +95,8 @@ String *createResponseHeader(int status, char *reason, int contentLen,
 
   snprintf(tempBuff, sizeof(tempBuff), "%s %d %s\r\n", httpVer, status, reason);
   String *responseHeader = createString(tempBuff);
-  stringCat(&responseHeader, getDateTime());
+  String *datetime = getDateTime();
+  stringCat(&responseHeader, datetime);
   stringAppend(&responseHeader, server);
 
   memset(tempBuff, 0, sizeof(tempBuff));
@@ -106,6 +107,9 @@ String *createResponseHeader(int status, char *reason, int contentLen,
   snprintf(tempBuff, sizeof(tempBuff), "Content-Length: %d\r\n", contentLen);
   stringAppend(&responseHeader, tempBuff);
   stringAppend(&responseHeader, "\r\n");
+
+  // Freeing up memory
+  freeString(datetime);
 
   return responseHeader;
 }
